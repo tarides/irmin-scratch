@@ -53,7 +53,7 @@ printf "+--------------------------------------------+\n"
 printf "| Name: Bench runner                         |\n"
 printf "+--------------------------------------------+\n"
 printf "| Author: Étienne Marais <etienne@maiste.fr> |\n"
-printf "| Version: 20220210                          |\n"
+printf "| Version: 20220214                          |\n"
 printf "+--------------------------------------------+\n\n"
 
 
@@ -87,7 +87,6 @@ check_and_set $2
 eval $(opam env)
 printf "\nREPR:\n"
 cd repr
-git remote add ioana https://github.com/maiste/repr.git
 git checkout bench-$1
 eval $(opam env)
 opam pin add repr.dev . -y
@@ -96,8 +95,6 @@ cd ../
 
 printf "\nINDEX:\n"
 cd index
-git remote add ioana https://github.com/maiste/index.git
-git fetch ioana
 git checkout bench-$1
 eval $(opam env)
 opam pin add index.dev . -y --ignore-pin-depends
@@ -107,7 +104,7 @@ printf "\nIRMIN:\n"
 cd irmin
 git remote add up https://github.com/mirage/irmin.git
 git fetch up
-git checkout bench-$1
+git checkout origin/bench-$1
 patch_strategy $3
 eval $(opam env)
 opam install . --deps-only -t --ignore-pin-depends -y
