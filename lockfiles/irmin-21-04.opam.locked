@@ -272,7 +272,7 @@ pin-depends: [
   ]
   [
     "ppx_repr.dev"
-    "git+https://github.com/maiste/repr#e9cef1197cba42885eaefe526617ad241db57b82"
+    "git+https://github.com/maiste/repr#ff115ca8707c7db340fad72564323927cc437de8"
   ]
   [
     "ppxlib.0.24.0"
@@ -289,7 +289,7 @@ pin-depends: [
   ]
   [
     "repr.dev"
-    "git+https://github.com/maiste/repr#e9cef1197cba42885eaefe526617ad241db57b82"
+    "git+https://github.com/maiste/repr#ff115ca8707c7db340fad72564323927cc437de8"
   ]
   [
     "result.1.5"
@@ -628,7 +628,7 @@ x-opam-monorepo-duniverse-dirs: [
     ]
   ]
   [
-    "git+https://github.com/maiste/repr#e9cef1197cba42885eaefe526617ad241db57b82"
+    "git+https://github.com/maiste/repr#ff115ca8707c7db340fad72564323927cc437de8"
     "repr"
   ]
   [
