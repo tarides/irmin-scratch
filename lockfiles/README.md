@@ -7,7 +7,7 @@ for a benchmark purpose. It is used with `opam monorepo` and `dune`.
 
 Files older than september 21 only work in the context of `irmin-bench`. They
 are intended to be used with the following configuration:
-  - `ocaml.0.13.x`
+  - `ocaml.4.13.x`
   - `opam-monorepo.0.2.7`
   - `dune.2.9.3`
 
