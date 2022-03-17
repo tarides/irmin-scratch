@@ -2,7 +2,7 @@
 # | Name: Bench runner                         |
 # +--------------------------------------------+
 # | Author: Étienne Marais <etienne@maiste.fr> |
-# | Version: 20220210                          |
+# | Version: 20220217                          |
 # +--------------------------------------------+
 
 # Option(s)
@@ -18,8 +18,8 @@ git config --global user.name "Tmp"
 
 check_and_set () {
   case $1 in
-    "printbox.0.6") printf "Install printbox 0.6"; eval $(opam env) && opam install printbox.0.6 -y;;
-    "printbox.0.5") printf "Install printbox 0.5"; eval $(opam env) && opam install printbox.0.5 -y;;
+    "printbox.0.6") printf "Install printbox 0.6\n"; eval $(opam env) && opam install printbox.0.6 -y;;
+    "printbox.0.5") printf "Install printbox 0.5\n"; eval $(opam env) && opam install printbox.0.5 -y;;
     *) printf "Nothing to install";;
   esac
 }
@@ -36,10 +36,22 @@ setup-and-run () {
     echo "Setting up for $SETUP_NAME/$TEST_SUFFIX that uses $IRMIN_REV / $INDEX_REV / $REPR_REV"
     (
     cd irmin;
-    
+
+    # Empty the cache
+    if [ $(whoami) = "root" ] ; then
+        sync ; echo 3 > /proc/sys/vm/drop_caches
+    else
     # Dry run
-    opam exec -- dune exec -- ./bench/irmin-pack/tree.exe --mode trace --no-summary --empty-blobs --path-conversion=v0+v1 $TREE_FLAGS --artefacts "$ARTEFACTS_PREFIX/nope";
-    
+        opam exec -- dune exec -- ./bench/irmin-pack/tree.exe \
+                --mode trace \
+                --no-summary \
+                --empty-blobs \
+                --path-conversion=v0+v1 \
+                $TREE_FLAGS \
+                --artefacts \
+                "$ARTEFACTS_PREFIX/nope";
+    fi
+
     # The real run
     opam exec --  dune exec -- ./bench/irmin-pack/tree.exe --mode trace --no-summary --keep-stat-trace $TREE_FLAGS --artefacts "$ARTEFACTS_PREFIX/$SETUP_NAME/$TEST_SUFFIX";
   )
@@ -53,23 +65,37 @@ printf "+--------------------------------------------+\n"
 printf "| Name: Bench runner                         |\n"
 printf "+--------------------------------------------+\n"
 printf "| Author: Étienne Marais <etienne@maiste.fr> |\n"
-printf "| Version: 20220214                          |\n"
+printf "| Version: 20220221                          |\n"
 printf "+--------------------------------------------+\n\n"
 
 
+printf "+---------- DOWNLOAD STAGE ----------+\n"
+cd $HOME
+
+if [! -e data5.repr ] ; then
+    printf "[+] Download the repr trace\n"
+    wget data.tarides.com/irmin/data_1343496commits.repr
+    printf "[~] Change name to data5.repr\n"
+    mv data_1343496commits.repr data5.repr 
+else
+    printf "[~] Data5 is already present on the machine\n"
+fi
+
+printf "+------------------------------------+\n\n"
+
+
 printf "+---------- CLONING STAGE ----------+\n"
-rm -rf irmin index repr
-if test -f "irmin" ; then
+if [ -e "irmin"  ]; then
   printf "Irmin already installed\n"
 else
    git clone https://github.com/maiste/irmin.git
 fi
-if test -f "repr" ; then
+if [ -e "repr" ]; then
   printf "Repr already install\n"
 else
    git clone https://github.com/maiste/repr.git
 fi
-if test -f "index" ; then
+if [ -e "index" ] ; then
   printf "Index already installed\n"
 else
    git clone https://github.com/maiste/index.git
@@ -87,7 +113,7 @@ check_and_set $2
 eval $(opam env)
 printf "\nREPR:\n"
 cd repr
-git checkout bench-$1
+git switch "bench-$1"
 eval $(opam env)
 opam pin add repr.dev . -y
 opam pin add ppx_repr.dev . -y
@@ -95,16 +121,17 @@ cd ../
 
 printf "\nINDEX:\n"
 cd index
-git checkout bench-$1
+git switch "bench-$1"
 eval $(opam env)
 opam pin add index.dev . -y --ignore-pin-depends
 cd ../
 
 printf "\nIRMIN:\n"
 cd irmin
-git remote add up https://github.com/mirage/irmin.git
+git remote show up || git remote add up https://github.com/mirage/irmin.git
 git fetch up
-git checkout origin/bench-$1
+printf "Switch branch\n"
+git switch -d "origin/bench-$1"
 patch_strategy $3
 eval $(opam env)
 opam install . --deps-only -t --ignore-pin-depends -y
