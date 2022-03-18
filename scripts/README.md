@@ -26,3 +26,29 @@
    ```sh
    ./execute_irmin_bench/sh feb-22 printbox.0.6 patch-minimal
    ```
+
+### install_tezos.sh
+
+* __Purpose__: this script installs `Tezos` on the current machine.
+* __Required__: nothing
+* __Usage__:
+  ```sh
+  ./install_tezos.sh
+  ```
+* __Example__:
+  ```sh
+  ./install_tezos.sh
+  ```
+
+## exec_tezos_replay.sh
+
+* __Purpose__: this script runs a `replay` on a specific trace.
+* __Required__: the trace and the store to be installed.
+* __Usage__:
+  ```sh
+  ./exec_tezos_replay [name] [tezos-branch] [repr-branch] [index-branch] [irmin-branch] [path/to/trace] <sizeG>
+  ```
+* __Example__:
+  ```sh
+  ./exec_tezos_replay irmin3.0-minimal add-trace-replay main main main trace/replay.repr 8G
+  ```
