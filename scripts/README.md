@@ -52,3 +52,16 @@
   ```sh
   ./exec_tezos_replay irmin3.0-minimal add-trace-replay main main main trace/replay.repr 8G
   ```
+
+### produce_graph.py
+
+* __Purpose__: this script extracts graphs from `lib_context` replay summaries.
+* __Requiered__: `seaborn`, `json`, `numpy`, `pandas` and, `matplotlib`
+* __Usage__:
+  ```sh
+  python3 ./produce_graphs.py [-p /path/to/summary/<name>-<version>[-<indexing_strategy>].json]
+  ```
+* __Example__:
+   ```sh
+   python3 ./produce_graphs.py -p /tmp/irmin-2.10.json -p /tmp/irmin-3.0-minmal.json
+   ```
