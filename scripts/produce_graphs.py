@@ -84,6 +84,26 @@ def create_total_plot(df, file="default.png", title="", v1="v1", v2="v2",
     print("====================")
 
 
+def create_multiline_plot(xdata, ydata, file="default.png",
+                          title="", xlabel="", ylabel=""):
+    print("== Start produce a multiline plot ==")
+    plt.close("all")
+    for k in ydata.keys():
+        plt.plot(xdata, ydata[k], label=k)
+    if title != "":
+        plt.title(title)
+    if xlabel != "":
+        plt.xlabel(xlabel)
+    if ylabel != "":
+        plt.ylabel(ylabel)
+    plt.legend()
+    plt.tight_layout()
+    print("[+] Plot data")
+    plt.savefig(file, dpi=150)
+    print("[+] Save plot in {}".format(file))
+    print("====================")
+
+
 js = load_json(args.path)
 version = list(js.keys())
 
@@ -131,7 +151,7 @@ create_total_plot(store_df, file="store_index.png",
                   v1="index", v2="pack file",  ylabel="Size in GB")
 # }}
 
-# Transaction per plot {{
+# Transaction per second plot {{
 tz = [round(j['block_specs']['tzop_count_tx']['value']['max_value']
             [0] / j['elapsed_wall'], 2) for j in list(js.values())]
 tz_df = {
@@ -145,6 +165,49 @@ create_bar_plot(tz_df, 'tz', file='tz_per_second.png',
                 ylabel="Average number of transactions per seconds",
                 color="plum")
 # }}
+
+# Store evolution over time {{
+block_levels = []
+store = dict()
+store2 = dict()
+for k in js.keys():
+    tmp = js[k]['disk']['store_pack']['value_after_commit']['evolution']
+    store[k] = [(x - y) / 1_000_000 for x, y in zip(tmp[1:], tmp[:-1])]
+    store2[k] = [x / 1_000_000_000 for x in tmp[1:]]
+    block_levels = js[k]['block_specs']['level_over_blocks'][1:]
+create_multiline_plot(block_levels, store, file="store_evolution.png",
+                      title="Pack store evolution over time",
+                      xlabel="Blocks",
+                      ylabel="Number of MB added")
+create_multiline_plot(block_levels, store2, file="store_evolution_2.png",
+                      title="Pack store evolution over time",
+                      xlabel="Blocks",
+                      ylabel="Pack store size in GB")
+# }}
+
+# Transaction evolution {{
+block_levels = []
+tz = dict()
+for k in js.keys():
+    tz[k] = [x / y for x, y in zip(js[k]['block_specs']['tzop_count_tx']['diff_per_block']
+                                   ['evolution'][1:], js[k]['span']['block']['duration']['evolution'][1:])]
+    block_levels = js[k]['block_specs']['level_over_blocks'][1:]
+create_multiline_plot(block_levels, tz, file="tz_evolution.png",
+                      title="TPS evolution over blocks in Hangzou",
+                      xlabel="Blocks",
+                      ylabel="TPS per block")
+# }}
+
+# Number of transactions per block over time {{
+data = dict()
+data['tz'] = js[version[0]
+                ]['block_specs']['tzop_count_tx']['diff_per_block']['evolution'][1:]
+create_multiline_plot(block_levels, data, file="tz_count.png",
+                      title="Number of transactions per block in Hangzou",
+                      xlabel="Blocks",
+                      ylabel="Number of transactions")
+# }}
+
 
 # Commit time plot {{
 commit = [round(j['span']['commit']['duration']['max_value'][0], 2)
@@ -161,7 +224,7 @@ create_bar_plot(commit_df, 'commit', file='commit_tail_latency.png',
 
 # Max Rss plot {{
 maxrss = [round(j['rusage']['maxrss']['value_after_commit']
-                 ['max_value'][0] / 1_000_000, 2) for j in list(js.values())]
+                ['max_value'][0] / 1_000_000, 2) for j in list(js.values())]
 maxrss_df = {
     'version': version,
     'maxrss': maxrss
