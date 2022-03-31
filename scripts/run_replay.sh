@@ -82,7 +82,23 @@ exec_one_replay irmin-3-always $SRC $BLOCK \
     $SSH_COPY "8G" "always"
 
 SRC="$HOME/hangzou-level2-210"
-exec_one_replay irmin-2 $SRC $BLOCK \
+exec_one_replay irmin-210 $SRC $BLOCK \
     "98c9315c1116215aa7792544c0fe7bdc764f084d" "eb53a14928eeaa70e80402380481add5bd7911be" \
     "0afd5de5e8cdd039d2898b136fbb04d3e76e4d1c" "98a5ff41622cbeb5883a107950b4e9dfaa6606ae" \
+    $SSH_COPY "8G"
+exec_one_replay irmin-29 $SRC $BLOCK \
+    "98c9315c1116215aa7792544c0fe7bdc764f084d" "eb53a14928eeaa70e80402380481add5bd7911be" \
+    "3631cd69e6241362701eaa5e0f71d1bf974f5d62" "1093084f937ddf41c21f9b3beecbc3610ec84c5f" \
+    $SSH_COPY "8G"
+
+# TODO: add ringo pin 0.5
+
+exec_one_replay irmin-27 $SRC $BLOCK \
+    "acdad0d033a81753e0fcf3fe95f915dbc5b1504b" "f79f95e20ea37f052d170c3d36dac9f0e5966039" \
+    "c8d715bdbab8cadaf1665fdd77e0e7e8bf4d16b1" "34ab27451c96d399ab6649edf5078c044a6c912f" \
+    $SSH_COPY "8G"
+
+exec_one_replay irmin-26 $SRC $BLOCK \
+    "d6c40553d044ee2257f1b7bbcef30dfc5b613bd3" "d410d610bc45ee42ac95f17b931be414dc007f7c" \
+    "2174147ae18fec599c9dc26871c91fa8d9ea8105" "3cca6a11e07dd08e3a50cae899fe08f026e1757e" \
     $SSH_COPY "8G"
