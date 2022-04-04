@@ -152,18 +152,33 @@ create_total_plot(store_df, file="store_index.png",
 # }}
 
 # Transaction per second plot {{
-tz = [round(j['block_specs']['tzop_count_tx']['value']['max_value']
-            [0] / j['elapsed_wall'], 2) for j in list(js.values())]
+tz = [round(j['block_specs']['tzop_count_tx']['value']['diff'] /
+            j['elapsed_wall'], 2) for j in list(js.values())]
+tz_df = {
+    'version': version,
+    'tzx': tz
+}
+tz_df = pd.DataFrame(tz_df)
+create_bar_plot(tz_df, 'tzx', file='tztx_per_second.png',
+                title="Transaction(s) per second",
+                xlabel="",
+                ylabel="Average number of transactions per seconds",
+                color="plum")
+# }}
+
+# Operations per second plot {{
+tz = [round(j['block_specs']['tzop_count']['value']['diff'] /
+            j['elapsed_wall'], 2) for j in list(js.values())]
 tz_df = {
     'version': version,
     'tz': tz
 }
 tz_df = pd.DataFrame(tz_df)
-create_bar_plot(tz_df, 'tz', file='tz_per_second.png',
-                title="Transaction per second",
+create_bar_plot(tz_df, 'tz', file='tzops_per_second.png',
+                title="Operation(s) per second",
                 xlabel="",
-                ylabel="Average number of transactions per seconds",
-                color="plum")
+                ylabel="Average number of operations per seconds",
+                color="LightPink")
 # }}
 
 # Store evolution over time {{
