@@ -4,7 +4,7 @@
 # | Name: Run Tezos Bench                      |
 # +--------------------------------------------+
 # | Author: Étienne Marais <etienne@maiste.fr> |
-# | Version: 20220317                          |
+# | Version: 20220404                          |
 # +--------------------------------------------+
 
 # Option(s)
@@ -31,6 +31,7 @@ SSH_COPY="$8"
 RAM_RESERVED="$9"
 
 TEZOS_INDEXING_STRATEGY="$10"
+PROGRESS_VERSION="$11"
 
 # Exec
 
@@ -38,7 +39,7 @@ printf "+--------------------------------------------+\n"
 printf "| Name: Run Tezos Bench                      |\n"
 printf "+--------------------------------------------+\n"
 printf "| Author: Étienne Marais <etienne@maiste.fr> |\n"
-printf "| Version: 20220317                          |\n"
+printf "| Version: 20220404                          |\n"
 printf "+--------------------------------------------+\n\n\n"
 
 
@@ -60,6 +61,11 @@ printf "[+] Source Cargo\n"
 
 printf "[~] Move in tezos/\n"
 cd "$HOME/tezos"
+
+printf "[~] Add sources\n"
+git remote add samoht https://github.com/samoht/tezos.git
+git remote add icristescu https://github.com/icristescu/tezos.git
+git fetch --all
 
 printf "[~] Switch tezos on branch %s\n" "$TEZOS_BRANCH"
 git switch -f master
@@ -121,6 +127,9 @@ eval "$(opam env)"
 printf "[+] Add opam default remote\n"
 opam repo add default https://opam.ocaml.org
 
+printf "[+] Install replay dependencies\n"
+opam install printbox printbox-text rusage bentov ppx_deriving_yojson lru -y
+
 printf "[-] Remove index, irmin, repr dependencies\n"
 opam uninstall irmin index repr -y
 
@@ -137,14 +146,14 @@ if [ ! -e "$HOME/tezos/vendors/irmin" ]; then
     ln -s "$HOME/irmin" "$HOME/tezos/vendors/irmin"
 fi
 
-printf "[+] Install replay dependencies\n"
-opam install printbox printbox-text rusage bentov ppx_deriving_yojson
+
 
 printf "[~] Eval opam environment\n"
 eval "$(opam env)"
 
-printf "[+] Build Tezos\n"
-make
+printf "[+] Build Lib_context\n"
+dune build src/lib_context src/bin_context
+
 printf "+------------------------------------+\n\n"
 
 
@@ -194,11 +203,17 @@ export TEZOS_CONTEXT="v"
 printf "[+] Export context as verbose\n"
 
 if [ ! -z "$TEZOS_INDEXING_STRATEGY" ]; then
-    printf "[+] Indexing strategy set to %s\n" "$TEZOS_INDEXING_STRATEGY"
-    TEZOS_INDEXING_STRATEGY="--indexing-strategy=$TEZOS_INDEXING_STRATEGY"
-else
-    TEZOS_INDEXING_STRATEGY=""
-    printf "[~] No indexing strategy set\n"
+    if [ ! "$TEZOS_INDEXING_STRATEGY" = "nope" ]; then
+        printf "[+] Indexing strategy set to %s\n" "$TEZOS_INDEXING_STRATEGY"
+        TEZOS_INDEXING_STRATEGY="--indexing-strategy=$TEZOS_INDEXING_STRATEGY"
+    fi
+fi
+
+if [ ! -z "$PROGRESS_VERSION" ]; then
+    if [ ! "$PROGRESS_VERSION" = "nope" ]; then
+        printf "[+] Progress pins to %s\n" "$PROGRESS_VERSION"
+        opam pin add progress $PROGRESS_VERSION
+    fi
 fi
 printf "+------------------------------------+\n\n"
 
