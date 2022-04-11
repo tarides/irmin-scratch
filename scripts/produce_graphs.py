@@ -17,7 +17,14 @@ parser.add_argument(
     "-p", "--path", action="append",
     help="list of path to summaries in json format, separated by comma",
     required=True)
+parser.add_argument(
+    "-d", "--dest", type=str,
+    help="Specify the destination for graphs",
+    default="./",
+    required=False
+)
 args = parser.parse_args()
+export_path = args.dest
 
 
 def load_json(paths):
@@ -54,7 +61,7 @@ def create_bar_plot(df, data, file="default.png", title="",
         plt.ylabel(ylabel)
     plt.tight_layout()
     print("[+] Plot data")
-    plt.savefig(file, dpi=150)
+    plt.savefig(os.path.join(export_path, file), dpi=150)
     print("[+] Save plot in {}".format(file))
     print("====================")
 
@@ -79,7 +86,7 @@ def create_total_plot(df, file="default.png", title="", v1="v1", v2="v2",
     plt.legend((b1, b2, b3), (v1, v2, 'total'))
     plt.tight_layout()
     print("[+] Plot data")
-    plt.savefig(file, dpi=150)
+    plt.savefig(os.path.join(export_path, file), dpi=150)
     print("[+] Save plot in {}".format(file))
     print("====================")
 
@@ -99,7 +106,7 @@ def create_multiline_plot(xdata, ydata, file="default.png",
     plt.legend()
     plt.tight_layout()
     print("[+] Plot data")
-    plt.savefig(file, dpi=150)
+    plt.savefig(os.path.join(export_path, file), dpi=150)
     print("[+] Save plot in {}".format(file))
     print("====================")
 
