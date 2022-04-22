@@ -84,6 +84,7 @@ def create_total_plot(df, file="default.png", title="", v1="v1", v2="v2",
         plt.ylabel(ylabel)
     plt.xticks(ind+width, df['version'])
     plt.legend((b1, b2, b3), (v1, v2, 'total'))
+    plt.xticks(rotation=50)
     plt.tight_layout()
     print("[+] Plot data")
     plt.savefig(os.path.join(export_path, file), dpi=150)
@@ -136,7 +137,7 @@ merge_df = {
 merge_df = pd.DataFrame(merge_df)
 create_bar_plot(merge_df, 'nb_merge', file='max_merge_after_commit.png',
                 title="Number of (index) merges",
-                xlabel="", ylabel="Number of merge per block",
+                xlabel="", ylabel="Number of merges",
                 color="antiquewhite")
 # }}
 
@@ -188,25 +189,6 @@ create_bar_plot(tz_df, 'tz', file='tzops_per_second.png',
                 color="LightPink")
 # }}
 
-# Store evolution over time {{
-block_levels = []
-store = dict()
-store2 = dict()
-for k in js.keys():
-    tmp = js[k]['disk']['store_pack']['value_after_commit']['evolution']
-    store[k] = [(x - y) / 1_000_000 for x, y in zip(tmp[1:], tmp[:-1])]
-    store2[k] = [x / 1_000_000_000 for x in tmp[1:]]
-    block_levels = js[k]['block_specs']['level_over_blocks'][1:]
-create_multiline_plot(block_levels, store, file="store_evolution.png",
-                      title="Pack store evolution over time",
-                      xlabel="Blocks",
-                      ylabel="Number of MB added")
-create_multiline_plot(block_levels, store2, file="store_evolution_2.png",
-                      title="Pack store evolution over time",
-                      xlabel="Blocks",
-                      ylabel="Pack store size in GB")
-# }}
-
 # Transaction evolution {{
 block_levels = []
 tz = dict()
@@ -215,15 +197,15 @@ for k in js.keys():
                                    ['evolution'][1:], js[k]['span']['block']['duration']['evolution'][1:])]
     block_levels = js[k]['block_specs']['level_over_blocks'][1:]
 create_multiline_plot(block_levels, tz, file="tz_evolution.png",
-                      title="TPS evolution over blocks in Hangzou",
+                      title="TPS in Hangzou",
                       xlabel="Blocks",
                       ylabel="TPS per block")
 # }}
 
 # Number of transactions per block over time {{
 data = dict()
-data['tz'] = js[version[0]
-                ]['block_specs']['tzop_count_tx']['diff_per_block']['evolution'][1:]
+data['transactions'] = js[version[0]
+                          ]['block_specs']['tzop_count_tx']['diff_per_block']['evolution'][1:]
 create_multiline_plot(block_levels, data, file="tz_count.png",
                       title="Number of transactions per block in Hangzou",
                       xlabel="Blocks",
@@ -260,16 +242,16 @@ create_bar_plot(maxrss_df, 'maxrss', file='maxrss.png',
 # }}
 
 # Gc Major Heap plot {{
-gc_df = [round(j['gc']['major_heap_bytes']['value_after_commit']
-               ['max_value'][0] / 1_000_000, 2) for j in list(js.values())]
+gc = [round(j['gc']['major_heap_bytes']['value_after_commit']
+            ['max_value'][0] / 1_000_000_000, 2) for j in list(js.values())]
 gc_df = {
     'version': version,
-    'gc': maxrss
+    'gc': gc
 }
 gc_df = pd.DataFrame(gc_df)
 create_bar_plot(gc_df, 'gc', file='gc_major_heap.png',
                 title="Maximal Major Heap size",
                 xlabel="",
-                ylabel="Major heap in MB",
+                ylabel="Major heap in GB",
                 color="LemonChiffon")
 #  }}
