@@ -194,6 +194,9 @@ parser.add_argument("--git", action="store_true",
 parser.add_argument("-p", "--path", type=str, help="Path to the trace")
 parser.add_argument("-s", "--systemd", type=str,
                     help="Set the memory consumption limit.")
+parser.add_argument("-a", "--all", action="store_true",
+                    help="Replay all, even 200k commits.")
+
 
 if __name__ == "__main__":
     display_header()
@@ -236,14 +239,15 @@ if __name__ == "__main__":
     setup_name = "benchmarks"
     build_context()
 
-    log.info("Run benchmark with 200_000 commits")
-    tree_flags = tree_path + " --ncommits-trace 200000 "
-    test_suffix = "packet_a"
-    run_bench(setup_name, tree_flags, artefacts_prefix, test_suffix,
-              is_user=args.user, systemd=args.systemd)
-    test_suffix = "packet_b"
-    run_bench(setup_name, tree_flags, artefacts_prefix, test_suffix,
-              is_user=args.user, systemd=args.systemd)
+    if args.all:
+        log.info("Run benchmark with 200_000 commits")
+        tree_flags = tree_path + " --ncommits-trace 200000 "
+        test_suffix = "packet_a"
+        run_bench(setup_name, tree_flags, artefacts_prefix, test_suffix,
+                  is_user=args.user, systemd=args.systemd)
+        test_suffix = "packet_b"
+        run_bench(setup_name, tree_flags, artefacts_prefix, test_suffix,
+                  is_user=args.user, systemd=args.systemd)
 
     log.info("Run benchmarks with 1_343_496")
     tree_flags = tree_path + " --ncommits-trace 1343496 "
