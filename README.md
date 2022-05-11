@@ -7,5 +7,4 @@ A place to store debugging stuff (e.g. one-time scripts, logs), benchmarking stu
 - Use directories (e.g. `scripts/issue1824/main.py`)
 - Don't push large files
 - Don't force push the main branch (but you may push on it)
-- Don't add sensible informations
-
+- Don't add sensitive informations
