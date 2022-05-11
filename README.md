@@ -1,4 +1,4 @@
-# irmin-scripts
+# irmin-scratch
 
 A place to store debugging stuff (e.g. one-time scripts, logs), benchmarking stuff (e.g. scripts, lock files), data analysis stuff (e.g. scripts, notebooks), small tests or examples that don't deserve to be in the main repository or anything else that deserves to be remembered.
 
