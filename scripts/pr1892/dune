@@ -1,0 +1,3 @@
+(executable
+ (name generate)
+ (libraries irmin-pack irmin-tezos lwt))
