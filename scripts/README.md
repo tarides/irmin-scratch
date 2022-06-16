@@ -27,6 +27,19 @@
   ./install_tezos.sh
   ```
 
+### run_replay.sh
+
+* __Purpose__: run `Tezos` replays on the current machine.
+* __Required__: nothing
+* __Usage__:
+  ```sh
+  ./run_replay.sh [user@host] [/path/on/host]
+  ```
+* __Example__:
+  ```sh
+  ./run_replay.sh "tezos@machine" "/data/bench"
+  ```
+
 ## exec_tezos_replay.sh
 
 * __Purpose__: this script runs a `replay` on a specific trace.
