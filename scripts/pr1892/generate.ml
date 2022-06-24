@@ -2,6 +2,12 @@
 
 include Lwt.Syntax
 
+let root = "osef"
+let indexing_strategy = Irmin_pack.Indexing_strategy.always
+
+let stop_after_preload = false
+
+
 (* let root = "version_3_always"
  * let indexing_strategy = Irmin_pack.Indexing_strategy.always *)
 
@@ -49,23 +55,23 @@ let register_dict_entry s =
 
 let all_entries = Hashtbl.create 42
 
-let dump_key name k =
+let dump_key  name k kind =
   Hashtbl.add all_entries name k;
   let open Irmin_pack.Pack_key in
   match inspect k with
   | Indexed _ -> assert false
   | Direct { hash; offset; length } ->
-      Fmt.epr "let %s = {h=h(\"%a\"), o=i(%d), l=%d}\n%!" name pp_hash hash
-        (Int63.to_int offset) length
+      Fmt.epr "let %s = {h=h(\"%a\"); o=i(%d); l=%d; k=`%c}\n%!" name pp_hash hash
+        (Int63.to_int offset) length kind
 
 let put_borphan bstore =
   let+ k = S.Backend.Contents.add bstore "borphan" in
-  dump_key "borphan" k;
+  dump_key "borphan" k 'b';
   k
 
 let put_b01 bstore =
   let+ k = S.Backend.Contents.add bstore "b01" in
-  dump_key "b01" k;
+  dump_key "b01" k 'n';
   k
 
 let put_n01 bstore nstore =
@@ -75,7 +81,7 @@ let put_n01 bstore nstore =
   let childs = [ (step, `Contents (k_b01, ())) ] in
   let n = S.Backend.Node.Val.of_list childs in
   let+ k = S.Backend.Node.add nstore n in
-  dump_key "n01" k;
+  dump_key "n01" k 'n';
   k
 
 let put_n0 bstore nstore =
@@ -85,19 +91,19 @@ let put_n0 bstore nstore =
   let childs = [ (step, `Contents (k_n01, ())) ] in
   let n = S.Backend.Node.Val.of_list childs in
   let+ k = S.Backend.Node.add nstore n in
-  dump_key "n0" k;
+  dump_key "n0" k 'n';
   k
 
 let put_c0 bstore nstore cstore =
   let* k_n0 = put_n0 bstore nstore in
   let c = S.Backend.Commit.Val.v ~info:S.Info.empty ~node:k_n0 ~parents:[] in
   let+ k = S.Backend.Commit.add cstore c in
-  dump_key "c0" k;
+  dump_key "c0" k 'c';
   k
 
 let put_b1 bstore =
   let+ k = S.Backend.Contents.add bstore "b1" in
-  dump_key "b1" k;
+  dump_key "b1" k 'b';
   k
 
 let put_n1 bstore nstore =
@@ -112,7 +118,7 @@ let put_n1 bstore nstore =
   in
   let n = S.Backend.Node.Val.of_list childs in
   let+ k = S.Backend.Node.add nstore n in
-  dump_key "n1" k;
+  dump_key "n1" k 'n';
   k
 
 let put_c1 bstore nstore cstore =
@@ -122,17 +128,17 @@ let put_c1 bstore nstore cstore =
     S.Backend.Commit.Val.v ~info:S.Info.empty ~node:k_n1 ~parents:[ k_c0 ]
   in
   let+ k = S.Backend.Commit.add cstore c in
-  dump_key "c1" k;
+  dump_key "c1" k 'c';
   k
 
 let put_borphan' bstore =
   let+ k = S.Backend.Contents.add bstore "borphan'" in
-  dump_key "borphan'" k;
+  dump_key "borphan'" k 'b';
   k
 
 let put_b2 bstore =
   let+ k = S.Backend.Contents.add bstore "b2" in
-  dump_key "b2" k;
+  dump_key "b2" k 'b';
   k
 
 let put_n2 bstore nstore =
@@ -142,7 +148,7 @@ let put_n2 bstore nstore =
   let childs = [ (step, `Contents (k_b2, ())) ] in
   let n = S.Backend.Node.Val.of_list childs in
   let+ k = S.Backend.Node.add nstore n in
-  dump_key "n2" k;
+  dump_key "n2" k 'n';
   k
 
 let put_c2 bstore nstore cstore =
@@ -152,17 +158,19 @@ let put_c2 bstore nstore cstore =
     S.Backend.Commit.Val.v ~info:S.Info.empty ~node:k_n2 ~parents:[ k_c1 ]
   in
   let+ k = S.Backend.Commit.add cstore c in
-  dump_key "c2" k;
+  dump_key "c2" k 'c';
   k
 
 let put_all repo =
   S.Backend.Repo.batch repo (fun bstore nstore cstore ->
       let* _ = put_borphan bstore in
       let* _ = put_c0 bstore nstore cstore in
-      let* _ = put_c1 bstore nstore cstore in
-      let* _ = put_borphan' bstore in
-      let* _ = put_c2 bstore nstore cstore in
-      Lwt.return_unit)
+      if not stop_after_preload then
+        let* _ = put_c1 bstore nstore cstore in
+        let* _ = put_borphan' bstore in
+        let* _ = put_c2 bstore nstore cstore in
+        Lwt.return_unit
+      else Lwt.return_unit)
 
 let main () =
   let config = config ~readonly:false ~fresh:true root in
