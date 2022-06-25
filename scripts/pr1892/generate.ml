@@ -2,17 +2,17 @@
 
 include Lwt.Syntax
 
-let root = "osef"
-let indexing_strategy = Irmin_pack.Indexing_strategy.always
+(* let root = "osef"
+ * let indexing_strategy = Irmin_pack.Indexing_strategy.always *)
 
-let stop_after_preload = false
+let stop_after_preload = true
 
 
 (* let root = "version_3_always"
  * let indexing_strategy = Irmin_pack.Indexing_strategy.always *)
 
-(* let root = "version_3_minimal"
- * let indexing_strategy = Irmin_pack.Indexing_strategy.minimal *)
+let root = "version_3_minimal"
+let indexing_strategy = Irmin_pack.Indexing_strategy.minimal
 
 (* let root = "version_2_minimal"
  * let indexing_strategy = Irmin_pack.Pack_store.Indexing_strategy.minimal *)
@@ -61,7 +61,8 @@ let dump_key  name k kind =
   match inspect k with
   | Indexed _ -> assert false
   | Direct { hash; offset; length } ->
-      Fmt.epr "let %s = {h=h(\"%a\"); o=i(%d); l=%d; k=`%c}\n%!" name pp_hash hash
+     (* let borphan = { h = h "c9bfadf2d211aa6da8e2d00732628a0880b7ee98"; o = i 0; l = 29; k = `b } *)
+      Fmt.epr "let %s = e \"%a\" %d %d `%c\n%!" name pp_hash hash
         (Int63.to_int offset) length kind
 
 let put_borphan bstore =
@@ -88,7 +89,7 @@ let put_n0 bstore nstore =
   let* k_n01 = put_n01 bstore nstore in
   let step = "step-n01" in
   register_dict_entry step;
-  let childs = [ (step, `Contents (k_n01, ())) ] in
+  let childs = [ (step, `Node (k_n01)) ] in
   let n = S.Backend.Node.Val.of_list childs in
   let+ k = S.Backend.Node.add nstore n in
   dump_key "n0" k 'n';
@@ -114,7 +115,7 @@ let put_n1 bstore nstore =
   let step' = "step-b01" in
   register_dict_entry step';
   let childs =
-    [ (step, `Contents (k_b1, ())); (step', `Contents (k_n01, ())) ]
+    [ (step, `Contents (k_b1, ())); (step', `Node (k_n01)) ]
   in
   let n = S.Backend.Node.Val.of_list childs in
   let+ k = S.Backend.Node.add nstore n in
