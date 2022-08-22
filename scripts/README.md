@@ -46,12 +46,13 @@
 * __Required__: the trace and the store to be installed.
 * __Usage__:
   ```sh
-  ./exec_tezos_replay [name] [tezos-branch] [repr-branch] [index-branch] [irmin-branch] \
+  ./exec_tezos_replay [name] [context-source] [block-count] \
+                      [tezos-branch] [repr-branch] [index-branch] [irmin-branch] \
                       [path/to/trace] <sizeG> <indexing_strategy> <progress_version>
   ```
 * __Example__:
   ```sh
-  ./exec_tezos_replay irmin3.0-minimal add-trace-replay \
+  ./exec_tezos_replay irmin3.0-minimal hangzou-210 140000 add-trace-replay \
                       main main main trace/replay.repr \
                       8G "nope" "nope"
   ```
