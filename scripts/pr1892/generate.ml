@@ -7,11 +7,12 @@ include Lwt.Syntax
 
 let stop_after_preload = true
 
+let gc_after_preload = true
 
 (* let root = "version_3_always"
  * let indexing_strategy = Irmin_pack.Indexing_strategy.always *)
 
-let root = "version_3_minimal"
+let root = "version_3_minimal_gced"
 let indexing_strategy = Irmin_pack.Indexing_strategy.minimal
 
 (* let root = "version_2_minimal"
@@ -162,23 +163,34 @@ let put_c2 bstore nstore cstore =
   dump_key "c2" k 'c';
   k
 
+let gc repo k =
+  Fmt.epr "GC\n%!";
+  let* launched = S.Gc.start_exn ~unlink:true repo k in
+  assert launched;
+  let* result = S.Gc.finalise_exn ~wait:true repo in
+  match result with
+  | `Idle | `Running -> failwith "expected finalised gc"
+  | `Finalised _ -> Lwt.return_unit
+
 let put_all repo =
   S.Backend.Repo.batch repo (fun bstore nstore cstore ->
       let* _ = put_borphan bstore in
-      let* _ = put_c0 bstore nstore cstore in
+      let* k = put_c0 bstore nstore cstore in
+      let* () =
       if not stop_after_preload then
         let* _ = put_c1 bstore nstore cstore in
         let* _ = put_borphan' bstore in
         let* _ = put_c2 bstore nstore cstore in
         Lwt.return_unit
-      else Lwt.return_unit)
+      else Lwt.return_unit in
+      Lwt.return k)
 
 let main () =
   let config = config ~readonly:false ~fresh:true root in
   let* repo = S.Repo.v config in
 
-  let* () = put_all repo in
-
+  let* k = put_all repo in
+  let* _ = if gc_after_preload then gc repo k else Lwt.return_unit in
   Fmt.epr "let pack_entries = [";
   Hashtbl.iter (fun s _ -> Fmt.epr "%s;" s) all_entries;
   Fmt.epr "]\n%!";
